@@ -34,7 +34,7 @@ const FirstStepCreate = () => {
 
   return (
     // Form card
-    <div className="w-full lg:w-1/3 p-5 shadow-lg border-t-4 rounded-lg">
+    <div className="w-full p-5 shadow-lg border-t-4 rounded-lg">
     <h2 className="text- 2x1 font-bold mb-5">Personal Information</h2>
     <form onSubmit={handleSubmit}>
     <Input name="name" className="mb-3" 

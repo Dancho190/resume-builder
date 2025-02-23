@@ -1,9 +1,12 @@
 import React from 'react'
 import { useResume } from '@/context/resume' // Импортируем хук с стэйтом
 import { Button } from '@/components/ui/button'
+import { usePathname } from 'next/navigation'
 
 const ResumeNav = () => {
     const {step, setStep} = useResume()
+    const pathname = usePathname()
+    const isEditPage = pathname.includes("/edit/") // Иницализируем страницу редактирвания.
 
   return (
     <nav className="flex justify-center w-full py-4">
@@ -16,7 +19,7 @@ const ResumeNav = () => {
                 key={item}
                 onClick={() => setStep(item)} // Меняем item и state когда переходим на другой шаг.
                 // Навигируем по разным компонентам шагов
-                // disabled ={step < item}
+                 disabled={!isEditPage && step < item}
                 >
                     {item}
                 </Button>

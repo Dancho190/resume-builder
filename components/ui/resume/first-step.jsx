@@ -6,14 +6,15 @@ import { useUser, SignInButton } from '@clerk/nextjs'
 
 const FirstStep = () => {
   // adding the context 
-  const { resume, setResume, saveResume } = useResume()
+  const { resume, setResume, updateResume, setStep} = useResume()
 
  // Хуки для проверки аутентификации
  const { isSignedIn } = useUser()
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    saveResume()
+    updateResume()
+    setStep(2) // Меняем шаг на второй.
     // Sending resume as form data to DB 
     // Navigating to next step component
   }
@@ -33,7 +34,7 @@ const FirstStep = () => {
 
   return (
     // Form card
-    <div className="w-full lg:w-1/3 p-5 shadow-lg border-t-4 rounded-lg">
+    <div className="w-full p-5 shadow-lg border-t-4 rounded-lg">
     <h2 className="text- 2x1 font-bold mb-5">Personal Information</h2>
     <form onSubmit={handleSubmit}>
     <Input name="name" className="mb-3" 
