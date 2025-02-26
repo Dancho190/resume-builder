@@ -7,7 +7,7 @@ export default function ResumeCard({resume}) { // Специальная кар�
     return (
      <Link href={`/dashboard/resume/edit/${resume._id}`}>
         <div 
-         className="shadow-lg h-[175] w-full rounded-xl p-5 border-t-[20px]" 
+         className="shadow-lg w-full rounded-xl p-5 border-t-[20px] max-h-screen overflow-y-auto" 
          style={{borderColor: resume?.themeColor}}
         >
          <PersonalDetails resume={resume} />

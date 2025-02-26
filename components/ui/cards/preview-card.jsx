@@ -8,7 +8,7 @@ export default function PreviewCard() { // Специальная карточк
 
     return (
         <div 
-         className="shadow-lg h-[175px] w-full rounded-xl p-5 border-t-[20px]" 
+         className="shadow-lg max-h-screen w-full rounded-xl p-5 border-t-[20px] overflow-y-auto" 
          style={{ borderColor: resume?.themeColor}}
         >
          <PersonalDetails resume={resume} />

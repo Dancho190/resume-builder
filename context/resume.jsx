@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
    saveResumeToDb,
    getUserResume, 
@@ -12,22 +12,35 @@ import { useRouter, useParams, usePathname } from 'next/navigation' // Нави�
 // Special context and State hook for resume creation
 const ResumeContext = React.createContext()
 
-const initialState = {
+const experienceField = { // Необходимые переменные для Epxerience Schema
+  title: "",
+  company: "",
+  address: "",
+  startDate: "",
+  endDate: "",
+  summary: "",
+}
+
+const initialState = { // Необходимое состояние и переменные что нужно заполнить с помощью хуков.
     name: "",
     job: "",
     address: "",
     phone: "",
     email: "",
     themeColor: "",
+    experience: [],
 }
 
 const ResumeProvider = ({ children }) => {
   // Состояния
-    const [resume, setResume] = React.useState(initialState)
-    const [resumes, setResumes] = React.useState([])
-    const [step, setStep] = React.useState(1)
+    const [resume, setResume] = useState(initialState)
+    const [resumes, setResumes] = useState([])
+    const [step, setStep] = useState(3)
+    // Experience состояния.
+    const [experienceList, setExperienceList] = useState([experienceField])
+    const [experienceLoading, setExperienceLoading] = useState(false)
     // Хуки роутера
-     const router = useRouter()
+     const router = useRouter() 
      const {_id} = useParams() // Добавляем id резюме в контекст.
      const pathname = usePathname() 
 
@@ -71,7 +84,7 @@ const ResumeProvider = ({ children }) => {
       }
     }
 
-    const getUserResumes = async () => {
+    const getUserResumes = async () => { // Получаем резюме из БД с помощью GET.
       try {
         const data = await getUserResume() // Вызываем функцию из Actions
         setResumes(data)
@@ -90,10 +103,10 @@ const ResumeProvider = ({ children }) => {
       }
     }
 
-    const updateResume = async () => { // Редактируем резюме.
+    const updateResume = async () => { // Редактируем резюме и обновляем.UPDATE
       try {
         const data = await updateResumeFromDb(resume)
-        setResume(data)
+        setResume(data) // Добавляем информацию в резюме.Сохраняем в таком виде.
         toast.success("Resume updated.") // Уведомление об успехе.
       } catch(err) {
         console.error(err)
@@ -101,15 +114,54 @@ const ResumeProvider = ({ children }) => {
       }
     }
 
+    // Для опыта работы и обновления резюме.
+    useEffect(() => {
+      if(resume.experience) {
+        setExperienceList(resume.experience)
+      }
+    }, [resume])
+
+    const handleExperienceChange = (e, index) => { // Event handler для изменения опыта работы.
+
+    }
+
+    const handleExperienceSubmit = () => { // Event handler для отправки опыта в БД.
+
+    }
+
+    const addExperience = () => { // Добавление опыта работы. Create операция.
+      const newExperience = { ...experienceField}
+      setExperienceList([...experienceList, newExperience])
+    }
+
+    const removeExperience = () => { // Удаление опыта работы.Delete запрос.
+    if(experienceList.length === 1 ) return // Мы не можем удалить единственный опыт работы.
+    const newEntries = experienceList.slice(0, experienceList.length - 1)  // Слайсим все элементы кроме последнего.
+    setExperienceList(newEntries) // Обновляем Experience List новым переменным.
+    // Обновить БД.
+    }
+
+    const handleExperienceGenerateWithAi = async () => { // Асинхронный Event Handler для запросов в Gemini.
+
+    }
+
   return (
-    <ResumeContext.Provider value={{
+    /* Context Provider с функциями и переменными что импортируются */
+    <ResumeContext.Provider value={{ 
       step, 
       setStep, 
       resume, 
       setResume, 
       saveResume, 
       resumes,
-      updateResume
+      updateResume,
+      experienceList,
+      experienceLoading,
+      handleExperienceChange,
+      handleExperienceSubmit,
+      addExperience,
+      removeExperience,
+      handleExperienceGenerateWithAi
       }}>
         {children}
         </ResumeContext.Provider>
