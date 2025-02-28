@@ -15,6 +15,7 @@ const ThirdStep = () => {
     removeExperience,
     handleExperienceGenerateWithAi
   } = useResume() // С помощью контекста передаем нужные функции в компоненты страницы.
+  
   return (
     <div className="w-full p-5 shadow-lg border-t-4 rounded-lg overflow-y-auto">
       <h2 className="text-2xl font-bold mb-5">Experience</h2>
@@ -27,6 +28,14 @@ const ThirdStep = () => {
           placeholder="Job title" 
           onChange={(e) => handleExperienceChange(e, index)} 
           value={experience.title}
+          className="mb-3"
+          />
+          <Input /* Название компании */
+          name="company" 
+          type="text" 
+          placeholder="Company name" 
+          onChange={(e) => handleExperienceChange(e, index)} 
+          value={experience.company}
           className="mb-3"
           />
           <Input /* Адрес Компании */
@@ -61,7 +70,7 @@ const ThirdStep = () => {
               {experienceLoading[index] ? (
                 <Loader2Icon size={18} className="mr-2" /> 
               ) : (
-                  <Brain size={18} classNane="mr-2" />
+                  <Brain size={18} className="mr-2" />
               )}
               Generate with Ai
               </Button> 

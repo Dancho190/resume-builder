@@ -1,5 +1,7 @@
 import PersonalDetails from "@/components/ui/preview/personal-details"// Личная информация.
 import Summary from "@/components/ui/preview/summary" // Превью резюме.
+import Experience from '@/components/ui/preview/experience' // Опыт работы
+import Education from "@/components/ui/preview/education" // Образование
 import { useResume } from "@/context/resume"
 
 
@@ -13,6 +15,8 @@ export default function PreviewCard() { // Специальная карточк
         >
          <PersonalDetails resume={resume} />
          <Summary resume={resume} />
+         <Experience resume={resume} />
+         <Education resume={resume} />
         </div>
     )
 }

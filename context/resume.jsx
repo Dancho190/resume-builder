@@ -4,10 +4,13 @@ import {
    saveResumeToDb,
    getUserResume, 
    getResumeFromDb,
-   updateResumeFromDb
+   updateResumeFromDb,
+   updateExperienceToDb,
+   updateEducationToDb
    } from '@/actions/resume' // Специальная функция для сохранения резюме
 import toast from 'react-hot-toast' // Специальные уведомления при действиях(toast)
 import { useRouter, useParams, usePathname } from 'next/navigation' // Навигация next-а
+import { runAi } from '@/actions/gemini' // Функция с вызовом Gemini.
 
 // Special context and State hook for resume creation
 const ResumeContext = React.createContext()
@@ -21,6 +24,13 @@ const experienceField = { // Необходимые переменные для 
   summary: "",
 }
 
+const educationField = {
+  name: "",
+  address: "",
+  qualification: "",
+  year: "",
+}
+
 const initialState = { // Необходимое состояние и переменные что нужно заполнить с помощью хуков.
     name: "",
     job: "",
@@ -28,17 +38,20 @@ const initialState = { // Необходимое состояние и пере�
     phone: "",
     email: "",
     themeColor: "",
-    experience: [],
+    experience: [experienceField],
+    education: [educationField] // Образование и опыт в резюме является отдельной частью.
 }
 
 const ResumeProvider = ({ children }) => {
   // Состояния
     const [resume, setResume] = useState(initialState)
     const [resumes, setResumes] = useState([])
-    const [step, setStep] = useState(3)
+    const [step, setStep] = useState(4)
     // Experience состояния.
     const [experienceList, setExperienceList] = useState([experienceField])
-    const [experienceLoading, setExperienceLoading] = useState(false)
+    const [experienceLoading, setExperienceLoading] = useState({})
+    // Education состояния 
+    const [educationList, setEducationList] = useState([educationField])
     // Хуки роутера
      const router = useRouter() 
      const {_id} = useParams() // Добавляем id резюме в контекст.
@@ -114,6 +127,18 @@ const ResumeProvider = ({ children }) => {
       }
     }
 
+
+    // experience
+    const updateExperience = async(experienceList) => { // Функция вызывается в Submit.
+      try {
+        const data = await updateExperienceToDb({...resume, experience: experienceList}) // Обновляем опыт работы в DB.
+        setResume(data) // Обновляем данные.
+        toast.success("Succesfully updated experience!")
+      } catch(err) {
+        console.error(err)
+        toast.error("Failed to update experience")
+      }
+    }
     // Для опыта работы и обновления резюме.
     useEffect(() => {
       if(resume.experience) {
@@ -122,28 +147,115 @@ const ResumeProvider = ({ children }) => {
     }, [resume])
 
     const handleExperienceChange = (e, index) => { // Event handler для изменения опыта работы.
-
+      const newEntries = [...experienceList]
+      const { name, value } = e.target 
+      newEntries[index][name] = value
+      setExperienceList(newEntries) // Обновляем значение опыта работы новой переменной.
     }
 
     const handleExperienceSubmit = () => { // Event handler для отправки опыта в БД.
-
+      updateExperience(experienceList)
+      setStep(4)
     }
 
     const addExperience = () => { // Добавление опыта работы. Create операция.
       const newExperience = { ...experienceField}
       setExperienceList([...experienceList, newExperience])
+      setResume((prevState) => ({ // Обновляем резюме и сохраняем прошлое состояние.
+        ...prevState,
+        education: [...experienceList, newExperience],
+      }))
     }
 
-    const removeExperience = () => { // Удаление опыта работы.Delete запрос.
+    const removeExperience = () => { // Удаление опыта работы.Delete функция.
     if(experienceList.length === 1 ) return // Мы не можем удалить единственный опыт работы.
     const newEntries = experienceList.slice(0, experienceList.length - 1)  // Слайсим все элементы кроме последнего.
     setExperienceList(newEntries) // Обновляем Experience List новым переменным.
     // Обновить БД.
+    updateExperience(newEntries) // Обновляем опыт работы.
     }
 
-    const handleExperienceGenerateWithAi = async () => { // Асинхронный Event Handler для запросов в Gemini.
+    const handleExperienceGenerateWithAi = async (index) => { // Асинхронный Event Handler для запросов в Gemini.
+      setExperienceLoading((prevState) => ({ ...prevState, [index]: true})) // На основе индекса состояние меняется.
 
+      const selectedExperience = experienceList[index] // Выбираем опыт работы.
+      if(!selectedExperience || !selectedExperience.title){ // Мы не можем отправить промпт если нету Job Title.
+        toast.error("Please enter the job title.") 
+        setExperienceLoading((prevState) => ({ ...prevState, [index]: false }))
+        return
+      }
+      const jobTitle = selectedExperience.title // Выбираем Job title.
+      const jobSummary = selectedExperience.summary || ""
+
+      try { // Отправляем асинхронный запрос в Gemini.
+        const responce = await runAi(`Generate a list of duties and responsibilities in HTML bullet points for the job title "${jobTitle}" ${jobSummary}`)
+        // Функция runAi и prompt для запроса.
+        const updatedExperienceList = experienceList.slice() // 
+        updatedExperienceList[index] = { ...selectedExperience, summary: responce}
+
+        setExperienceList(updatedExperienceList) // Обновляем опыт работы с помощью нового переменного.
+        setResume((prevState) => ({ // Обновляем резюме новой информацией и состоянием.
+          ...prevState,
+          experience: updatedExperienceList,
+        }))
+      } catch(err) {
+      console.error(err) // При ошибке выводим тост с ошибкой.
+      toast.error("Failed to generate job description")  
+      } finally {
+        setExperienceLoading((prevState) => ({ ...prevState, [index]: false }))
+      }
     }
+
+    // Education section
+    useEffect(()=> {
+      if (resume.education) {
+        setEducationList(resume.education)
+      }
+    },[resume])
+
+    const updateEducation = async (educationList) => { // Асихронная функция для обновления образования<div className=""></div>
+      try {
+        const data = await updateEducationToDb({ // Вызываем функцию из actions для обновления в БД.
+          ...resume, // Параметры что обрабатываются функцией из другого модуля.
+          education: educationList
+        })
+        setResume(data) // Обновляем резюме с новой информацией.
+        toast.success("Education updated.")
+      } catch(err) {
+        console.error(err)
+        toast.error("Failed to update education.")
+      }
+    }
+
+    const handleEducationChange = (e, index) => { // Изменение данных об образовании через переменную.Как в опыте.
+      const newEntries = [...educationList]
+      const { name, value } = e.target 
+      newEntries[index][name] = value
+      setEducationList(newEntries)
+    }
+
+    const handleEducationSubmit = () => { // Функция Submit-а,что обновляет данные в БД.
+      updateEducation(educationList)
+     // setStep(5)
+    }
+
+    const addEducation = () => { // Добавление образования. Create операция.
+      const newEducation = { ...educationField}
+      setEducationList([...educationList, newEducation])
+      setResume((prevState) => ({ // Обновляем резюме и сохраняем прошлое состояние.
+        ...prevState,
+        education: [...educationList, newEducation],
+      }))
+    }
+
+    const removeEducation = () => { // Удаление опыта работы.Delete запрос.
+    if(educationList.length === 1 ) return // Мы не можем удалить единственный опыт работы.
+    const newEntries = educationList.slice(0, educationList.length - 1)  // Слайсим все элементы кроме последнего.
+    setEducationList(newEntries) // Обновляем Education List новым переменным.
+    // Обновить БД.
+    updateEducation(newEntries)
+    }
+
 
   return (
     /* Context Provider с функциями и переменными что импортируются */
@@ -161,7 +273,12 @@ const ResumeProvider = ({ children }) => {
       handleExperienceSubmit,
       addExperience,
       removeExperience,
-      handleExperienceGenerateWithAi
+      handleExperienceGenerateWithAi,
+      educationList,
+      handleEducationChange,
+      handleEducationSubmit,
+      addEducation,
+      removeEducation,
       }}>
         {children}
         </ResumeContext.Provider>

@@ -84,3 +84,37 @@ export const updateResumeFromDb = async (data) => {
         throw new Error(err)
     }
 }
+
+export const updateExperienceToDb = async (data) => { // Функция для обновления резюме.
+    try {
+        db() // Вызываем DB специальным методом.
+        const {_id, experience} = data
+        await checkOwnership(_id) // Проверяем,придналежит ли Резюме User-у.
+
+        const resume = await Resume.findByIdAndUpdate( // Находим резюме по ID и обновляем с помощью функции.
+            _id,
+            { experience },
+            { new: true }
+        )
+        return JSON.parse(JSON.stringify(resume)) // Возвращаем и превразаем в строку.
+    } catch(err) {
+        throw new Error(err)
+    }
+}
+
+export const updateEducationToDb = async (data) => {
+    try {
+        db() // Вызываем DB специальным методом.
+        const {_id, education} = data
+        await checkOwnership(_id) // Проверяем,придналежит ли Резюме User-у.
+
+        const resume = await Resume.findByIdAndUpdate( // Находим резюме по ID и обновляем с помощью функции.
+            _id,
+            { education },
+            { new: true }
+        )
+        return JSON.parse(JSON.stringify(resume)) // Возвращаем и превразаем в строку.
+    } catch(err) {
+        throw new Error(err)
+    }
+}

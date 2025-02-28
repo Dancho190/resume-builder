@@ -1,11 +1,11 @@
 "use client"
 import React from 'react'
-import { useResume }  from '@/context/resume'
+import { useResume }  from '@/context/resume' // Контекст
 import SecondStep from '@/components/ui/resume/second-step'
 import ThirdStep from '@/components/ui/resume/third-step'
 import FourthStep from '@/components/ui/resume/fourth-step'
 import FifthStep from '@/components/ui/resume/fifth-step'
-import ResumeNav from '@/components/ui/nav/resume-nav'
+import ResumeNav from '@/components/ui/nav/resume-nav' 
 import FirstStep from '@/components/ui/resume/first-step-create'
 import PreviewCard from '@/components/ui/cards/preview-card'
 // Специальный edit mode с уникальным id резюме
