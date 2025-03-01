@@ -118,3 +118,20 @@ export const updateEducationToDb = async (data) => {
         throw new Error(err)
     }
 }
+
+export const updateSkillsToDb = async (data) => { // Точно такая же асинхронная функция для Skills.
+    try {
+        db() // Вызываем DB специальным методом.
+        const {_id, skills} = data
+        await checkOwnership(_id) // Проверяем,придналежит ли Резюме User-у.
+
+        const resume = await Resume.findByIdAndUpdate( // Находим резюме по ID и обновляем с помощью функции.
+            _id,
+            { skills },
+            { new: true }
+        )
+        return JSON.parse(JSON.stringify(resume)) 
+    } catch (err) {
+        throw new Error(err)
+    }
+}

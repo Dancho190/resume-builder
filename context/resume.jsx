@@ -6,8 +6,9 @@ import {
    getResumeFromDb,
    updateResumeFromDb,
    updateExperienceToDb,
-   updateEducationToDb
-   } from '@/actions/resume' // Специальная функция для сохранения резюме
+   updateEducationToDb,
+   updateSkillsToDb
+   } from '@/actions/resume' // Все асинхронные серверные фукнции связывающие db и context.
 import toast from 'react-hot-toast' // Специальные уведомления при действиях(toast)
 import { useRouter, useParams, usePathname } from 'next/navigation' // Навигация next-а
 import { runAi } from '@/actions/gemini' // Функция с вызовом Gemini.
@@ -31,6 +32,11 @@ const educationField = {
   year: "",
 }
 
+const skillField = {
+  name: "",
+  level: "",
+}
+
 const initialState = { // Необходимое состояние и переменные что нужно заполнить с помощью хуков.
     name: "",
     job: "",
@@ -52,6 +58,8 @@ const ResumeProvider = ({ children }) => {
     const [experienceLoading, setExperienceLoading] = useState({})
     // Education состояния 
     const [educationList, setEducationList] = useState([educationField])
+    // Skills состояния 
+    const [skillsList, setSkillsList] = useState({skillField})
     // Хуки роутера
      const router = useRouter() 
      const {_id} = useParams() // Добавляем id резюме в контекст.
@@ -236,7 +244,7 @@ const ResumeProvider = ({ children }) => {
 
     const handleEducationSubmit = () => { // Функция Submit-а,что обновляет данные в БД.
       updateEducation(educationList)
-     // setStep(5)
+      setStep(5) // Навигируем на след. шаг.
     }
 
     const addEducation = () => { // Добавление образования. Create операция.
@@ -248,12 +256,70 @@ const ResumeProvider = ({ children }) => {
       }))
     }
 
-    const removeEducation = () => { // Удаление опыта работы.Delete запрос.
-    if(educationList.length === 1 ) return // Мы не можем удалить единственный опыт работы.
+    const removeEducation = () => { // Удаление образования.Delete запрос.
+    if(educationList.length === 1 ) return // Мы не можем удалить единственный degree.
     const newEntries = educationList.slice(0, educationList.length - 1)  // Слайсим все элементы кроме последнего.
     setEducationList(newEntries) // Обновляем Education List новым переменным.
     // Обновить БД.
     updateEducation(newEntries)
+    }
+
+    // Skills context.
+    useEffect(() => {
+      if(resume.skills) {
+        setSkillsList(resume.skills) // Обновляем Skill лист.
+      }
+    }, [resume])
+
+    const updateSkills = async (skillsList) => { // Асинхронная функция для обновления навыков
+      // Добавляем валидацию навыков
+        const invalidSkills = skillsList.filter(
+          (skill) => !skill.name || skill.level) 
+          // Инициализируем неправильные скиллы,в которых не указаны параметры name и level.
+        if(invalidSkills.length > 0) {
+          toast.error("Please,fill the special areas of skills.") // Выводим ошибку.
+          return
+        }
+        try {
+          const data = await updateSkillsToDb({
+            ...resume, // Деструктурируем резюме.
+            skills: skillsList
+          }) // Обновляем навыки
+          setResume(data)
+          toast.success("Skills succesfully updated!") 
+        } catch(err) {
+          console.error(err)
+          toast.error("Failed to update skills.")
+      }
+    }
+
+    const handleSkillsChange = (e, index) => { // Функция для изменения навыков.
+      const newEntries = [...skillsList]
+      const { name, value } = e.target 
+      newEntries[index][name] = value
+      setSkillsList(newEntries)
+    }
+
+    const handleSkillsSubmit = () => { // Функция для обновления навыков и навигацией в страницу загрузки.
+      updateSkills(skillsList)
+    //  router.push(`/dashboard/resume/download/${resume._id}`) // Роутинг в другую страницу.
+    }
+
+    const addSkill = () => { // Добавление навыка.
+      const newSkill = { ...skillField}
+      setSkillsList([...skillsList, newSkill])
+      setResume((prevState) => ({ // Обновляем резюме и сохраняем прошлое состояние.
+        ...prevState,// Предыдущее состояние.
+        skills: [...skillsList, newSkill], // обновление навыков.
+      }))
+    }
+
+    const removeSkill = () => {
+      if(skillsList.length === 1 ) return // Мы не можем удалить единственный добавленный навык.
+      const newEntries = skillsList.slice(0, skillsList.length - 1)  // Слайсим все элементы кроме последнего.
+      setSkillsList(newEntries) // Обновляем Skills List новым переменным.
+      // Обновить БД.
+      updateSkills(newEntries) // Обновляем навыки вызывая функцию updateSkills
     }
 
 
@@ -279,6 +345,11 @@ const ResumeProvider = ({ children }) => {
       handleEducationSubmit,
       addEducation,
       removeEducation,
+      skillsList,
+      handleSkillsChange,
+      handleSkillsSubmit,
+      addSkill,
+      removeSkill,
       }}>
         {children}
         </ResumeContext.Provider>
