@@ -7,7 +7,8 @@ import {
    updateResumeFromDb,
    updateExperienceToDb,
    updateEducationToDb,
-   updateSkillsToDb
+   updateSkillsToDb,
+   deleteResumeFromDb
    } from '@/actions/resume' // Все асинхронные серверные фукнции связывающие db и context.
 import toast from 'react-hot-toast' // Специальные уведомления при действиях(toast)
 import { useRouter, useParams, usePathname } from 'next/navigation' // Навигация next-а
@@ -52,7 +53,7 @@ const ResumeProvider = ({ children }) => {
   // Состояния
     const [resume, setResume] = useState(initialState)
     const [resumes, setResumes] = useState([])
-    const [step, setStep] = useState(4)
+    const [step, setStep] = useState(1)
     // Experience состояния.
     const [experienceList, setExperienceList] = useState([experienceField])
     const [experienceLoading, setExperienceLoading] = useState({})
@@ -274,11 +275,11 @@ const ResumeProvider = ({ children }) => {
     const updateSkills = async (skillsList) => { // Асинхронная функция для обновления навыков
       // Добавляем валидацию навыков
         const invalidSkills = skillsList.filter(
-          (skill) => !skill.name || skill.level) 
+          (skill) => !skill.name || !skill.level) 
           // Инициализируем неправильные скиллы,в которых не указаны параметры name и level.
         if(invalidSkills.length > 0) {
           toast.error("Please,fill the special areas of skills.") // Выводим ошибку.
-          return
+          return // Выдаем ошибку если чего то не хватает в Input.
         }
         try {
           const data = await updateSkillsToDb({
@@ -302,7 +303,7 @@ const ResumeProvider = ({ children }) => {
 
     const handleSkillsSubmit = () => { // Функция для обновления навыков и навигацией в страницу загрузки.
       updateSkills(skillsList)
-    //  router.push(`/dashboard/resume/download/${resume._id}`) // Роутинг в другую страницу.
+      router.push(`/dashboard/resume/download/${resume._id}`) // Роутинг в другую страницу.
     }
 
     const addSkill = () => { // Добавление навыка.
@@ -322,6 +323,16 @@ const ResumeProvider = ({ children }) => {
       updateSkills(newEntries) // Обновляем навыки вызывая функцию updateSkills
     }
 
+  const deleteResume = async (_id) => { // Асинхронная функция удаления резюме из Dashboard-а по id.
+      try {
+        await deleteResumeFromDb(_id) // Функция из серверных контроллеров.
+        setResumes(resumes.filter((resume) => resume.id !== _id)) // Хук контекста
+        toast.success("Resume deleted.") // Уведомление из React hot toast.
+    } catch(err) {
+      console.error(err)
+      toast.error("Failed to delete resume")
+    }
+  }
 
   return (
     /* Context Provider с функциями и переменными что импортируются */
@@ -350,7 +361,9 @@ const ResumeProvider = ({ children }) => {
       handleSkillsSubmit,
       addSkill,
       removeSkill,
-      }}>
+      deleteResume
+      }}
+      >
         {children}
         </ResumeContext.Provider>
   )

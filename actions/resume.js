@@ -135,3 +135,15 @@ export const updateSkillsToDb = async (data) => { // Точно такая же 
         throw new Error(err)
     }
 }
+
+export const deleteResumeFromDb = async (_id) => { // Функция удаления резюме.
+    try {
+        db() // Вызываем DB специальным методом.
+        await checkOwnership(_id) // Проверяем,придналежит ли Резюме User-у.
+
+        const resume = await Resume.findByIdAndDelete(_id) // Находим резюме по ID и удаляем с помощью функции.
+        return JSON.parse(JSON.stringify(resume)) 
+    } catch (err) {
+        throw new Error(err)
+    }
+}

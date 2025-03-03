@@ -1,8 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import  { Input } from '@/components/ui/input'
-import { useResume } from '@/context/resume'
-import { useUser, SignInButton } from '@clerk/nextjs'
+import { useResume } from '@/context/resume' // Контекст
+import { useUser, SignInButton } from '@clerk/nextjs' // Хуки Clerk-а.
+import { HexColorPicker } from 'react-colorful' // Color Picker
 
 const FirstStep = () => {
   // adding the context 
@@ -45,7 +46,7 @@ const FirstStep = () => {
     autoFocus
     required
     />
-        <Input name="job" className="mb-3" 
+    <Input name="job" className="mb-3" 
     onChange={handleChange}
     value={resume.job}
     placeholder="Your company"
@@ -53,7 +54,7 @@ const FirstStep = () => {
     autoFocus
     required
     />
-       <Input name="address" className="mb-3" 
+    <Input name="address" className="mb-3" 
     onChange={handleChange}
     value={resume.address}
     placeholder="Your address"
@@ -61,7 +62,7 @@ const FirstStep = () => {
     autoFocus
     required
     />
-       <Input name="phone" className="mb-3" 
+    <Input name="phone" className="mb-3" 
     onChange={handleChange}
     value={resume.phone}
     placeholder="Phone number"
@@ -69,7 +70,7 @@ const FirstStep = () => {
     autoFocus
     required
     />
-       <Input name="email" className="mb-3" 
+    <Input name="email" className="mb-3" 
     onChange={handleChange}
     value={resume.email}
     placeholder="Your email"
@@ -77,6 +78,11 @@ const FirstStep = () => {
     autoFocus
     required
     />
+
+     <HexColorPicker
+        color={resume.themeColor}
+        onChange={(themeColor) => setResume({ ...resume, themeColor })}
+      />
 
     <div className="flex justify-end">
     {!isSignedIn ? (<SignInButton>
