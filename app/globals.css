@@ -64,3 +64,12 @@
     @apply bg-background text-foreground;
   }
 }
+/* main navigation and print */
+@media print {
+  @page {
+    margin: 0;
+  }
+ .top-nav {
+  display: none;
+ }
+}

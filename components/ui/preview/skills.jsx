@@ -2,7 +2,7 @@ import React from 'react'
 import { Progress } from "@/components/ui/progress"
 import { Star } from 'lucide-react'
 
-export default function Skills({ resume, print = false }) {
+export default function Skills({ resume, print = false }) { // Пока print параметр true,он показывает progress bar.
     const themeColor = resume?.themeColor || "#333"
     const defaultColor = "#d3d3d3"
  

@@ -1,3 +1,4 @@
+"use client"
 import React from 'react'
 
 const Experience = ({resume}) => { // Компонент опыта работы для Preview Card.

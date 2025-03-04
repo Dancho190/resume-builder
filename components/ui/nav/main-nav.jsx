@@ -16,7 +16,7 @@ const MainNav = () => {
   // Специальный User хук Clerk-а
   const { isSignedIn, user } = useUser() // Проверяем,залогинился ли User
   return (
-    <nav className= "flex justify-between items-center p-1 shadow">
+    <nav className= "flex justify-between items-center p-1 shadow top-nav">
         <Link href="/logo.svg">
         <Image 
         src="/logo.svg" alt="logo" width={50} height={50}
