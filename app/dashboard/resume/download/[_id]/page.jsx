@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { useResume } from '@/context/resume'
 import ResumeCard from '@/components/ui/cards/resume-card'
+import toast from 'react-hot-toast'
 
 // https://cdn-icons-png.flaticon.com/128/9131/9131795.png // Download
 // https://cdn-icons-png.flaticon.com/128/10550/10550076.png // Share
@@ -61,7 +62,13 @@ const DownloadPage = ({ params }) => {
                 width={50}
                 height={50}
                 />
-                <Button className="my-3">Share</Button>
+                <Button onClick={() => {
+                  navigator.clipboard.writeText( /* При нажатии,копирует ссылку на резюме. */
+                    `${window.location.origin}/resume/${currentResume._id}`
+                  )
+                  toast.success("Link copied to clipboard to share!"
+                  )
+                }} className="my-3">Share</Button>
               </div>
             </div>
             {currentResume ? <ResumeCard resume={currentResume} /> : null}

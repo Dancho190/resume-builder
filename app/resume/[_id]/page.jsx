@@ -6,7 +6,21 @@ import Experience from '@/components/ui/preview/experience'
 import Education from '@/components/ui/preview/education'
 import Skills from '@/components/ui/preview/skills'
 
-export default async function ResumePage({params}) {
+export async function generateMetadata({ params }) { // Специальная функция с генерацией метададнных для SEO оптимизации.
+  const resume = await getResumeFromDb(params._id);
+
+  return {
+    title: `${resume.name} - Resume`,
+    description: resume.summary,
+    openGraph: {
+      title: `${resume.name} - Resume`,
+      description: resume.summary,
+      images: ["/logo.svg"],
+    },
+  };
+}
+
+export default async function ResumePage({params}) { // Асинхронная функция для дисплея страницы с Резюме.
   const resume = await getResumeFromDb(params._id)
 
   return (
